@@ -16,12 +16,56 @@ for (var i = 0; i < rowct; i++) {
 }
 
 canvas.addEventListener('click', handleClick)
+canvas.addEventListener('space', play)
+
 
 function draw () {
   for (var row = 0; row < rowct; row++) {
     for (var column = 0; column < colct; column++) {
+      if (arr[i][j]) {
+        context.fillStyle = '#fff'
+        context.fillRect(i * boxSize, j * boxSize - 1, boxSize, boxSize)
+      }
     }
   }
+}
+
+function update () {
+  var tmp = arr.slice(0)
+
+  for (var row = 0; row < rowct; row++) {
+    for (var column = 0; column < colct; column++) {
+      var aliveCount = sumNeighbors(arr, i, j)
+
+      // alive
+      if (arr[i][j]) {
+        if (aliveCount === 2 || aliveCount === 3) {
+          tmp[i][j] = true
+        } else {
+          tmp[i][j] = false
+        }
+      // dead
+      } else {
+        if (aliveCount === 3) {
+          tmp[i][j] = true
+        } else {
+          tmp[i][j] = false
+        }
+      }
+    }
+  }
+  arr = tmp.slice(0)
+}
+
+function sumNeighbors (arr, row, col) {
+  return (arr[(row - 1) % rowct][(col - 1) % colct] +
+          arr[(row - 1) % rowct][col % colct] +
+          arr[(row - 1) % rowct][(col + 1) % colct] +
+          arr[row % rowct][(col - 1) % colct] +
+          arr[row % rowct][(col + 1) % colct] +
+          arr[(row + 1) % rowct][(col - 1) % colct] +
+          arr[(row + 1) % rowct][col % colct] +
+          arr[(row + 1) % rowct][(col + 1) % colct])
 }
 
 function handleClick (e) {
@@ -33,8 +77,13 @@ function handleClick (e) {
                     Math.floor(e.offsetY / boxSize) * boxSize - 1,
                     boxSize, boxSize)
   } else {
-    context.fillStyle = '#000'
+    context.clearRect(Math.floor(e.offsetX / boxSize) * boxSize,
+                    Math.floor(e.offsetY / boxSize) * boxSize - 1,
+                    boxSize, boxSize)
   }
 }
 
-draw()
+function play () {
+  context.fillStyle = '#f00'
+  context.fillRect(0, 0, boxSize, boxSize)
+}
