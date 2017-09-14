@@ -1,103 +1,93 @@
 var CANVAS_WIDTH = 800
 var CANVAS_HEIGHT = 600
-var FPS = 1
 
 var canvas = document.getElementById('canvas')
 var context = canvas.getContext('2d')
 var boxSize = 20
 var rowct = Math.floor(CANVAS_HEIGHT / boxSize)
 var colct = Math.floor(CANVAS_WIDTH / boxSize)
-var paused = true
 
-var arr = new Array(rowct)
-for (var i = 0; i < rowct; i++) {
-  arr[i] = new Array(colct)
-  for (var j = 0; j < colct; j++) {
-    arr[i][j] = false
+var board = {
+  arrBools: new Array(rowct),
+  arrCounts: new Array(rowct),
+
+  init: function () {
+    for (var i = 0; i < rowct; i++) {
+      this.arrBools[i] = new Array(colct)
+      this.arrCounts[i] = new Array(colct)
+      for (var j = 0; j < colct; j++) {
+        this.arrBools[i][j] = false
+        this.arrCounts[i][j] = 0
+      }
+    }
+  },
+
+  toggleBool: function (i, j) {
+    this.arrBools[i][j] = !this.arrBools[i][j]
+  },
+
+  getBool: function (i, j) {
+    return this.arrBools[i][j]
+  },
+
+  update: function () {
+    for (var row = 0; row < rowct; row++) {
+      for (var col = 0; col < colct; col++) {
+        this.arrCounts[row][col] = this.arrBools[(row - 1 + rowct) % rowct][(col - 1 + colct) % colct] +
+                            this.arrBools[(row - 1 + rowct) % rowct][col] +
+                            this.arrBools[(row - 1 + rowct) % rowct][(col + 1) % colct] +
+                            this.arrBools[row][(col - 1 + colct) % colct] +
+                            this.arrBools[row][(col + 1) % colct] +
+                            this.arrBools[(row + 1) % rowct][(col - 1 + colct) % colct] +
+                            this.arrBools[(row + 1) % rowct][col] +
+                            this.arrBools[(row + 1) % rowct][(col + 1) % colct]
+      }
+    }
+    for (var i = 0; i < rowct; i++) {
+      for (var j = 0; j < colct; j++) {
+        var aliveCount = this.arrCounts[i][j]
+        if (this.arrBools[i][j]) {
+          if (aliveCount === 2 || aliveCount === 3) {
+            this.arrBools[i][j] = true
+          } else {
+            this.arrBools[i][j] = false
+          }
+        } else {
+          if (aliveCount === 3) {
+            this.arrBools[i][j] = true
+          } else {
+            this.arrBools[i][j] = false
+          }
+        }
+      }
+    }
   }
 }
 
 document.addEventListener('keydown', function (event) {
-  toggle()
+  board.update()
+  draw()
 }, false)
 
-function toggle () {
-  paused = !paused
-}
-
 function draw () {
+  context.beginPath()
+  context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+
   for (var row = 0; row < rowct; row++) {
-    for (var column = 0; column < colct; column++) {
-      if (arr[i][j]) {
+    for (var col = 0; col < colct; col++) {
+      if (board.getBool(row, col)) {
         context.fillStyle = '#fff'
-        context.fillRect(i * boxSize, j * boxSize - 1, boxSize, boxSize)
+        context.fillRect(row * boxSize, col * boxSize, boxSize, boxSize)
       }
     }
   }
-}
-
-function update () {
-  var tmp = arr.slice(0)
-
-  for (var i = 0; i < rowct; i++) {
-    for (var j = 0; j < colct; j++) {
-      console.log(arr.length)
-      var aliveCount = sumNeighbors(arr, i, j)
-      // alive
-      if (arr[i][j]) {
-        if (aliveCount === 2 || aliveCount === 3) {
-          tmp[i][j] = true
-        } else {
-          tmp[i][j] = false
-        }
-      // dead
-      } else {
-        if (aliveCount === 3) {
-          tmp[i][j] = true
-        } else {
-          tmp[i][j] = false
-        }
-      }
-    }
-  }
-  arr = tmp.slice(0)
-}
-
-function sumNeighbors (arr, row, col) {
-  console.log(rowct)
-  console.log(colct)
-  console.log(row)
-  console.log(col)
-  return arr[(row - 1 + rowct) % rowct][(col - 1 + colct) % colct] +
-          arr[(row - 1 + rowct) % rowct][col] +
-          arr[(row - 1 + rowct) % rowct][(col + 1) % colct] +
-          arr[row][(col - 1 + colct) % colct] +
-          arr[row][(col + 1) % colct] +
-          arr[(row + 1) % rowct][(col - 1 + colct) % colct] +
-          arr[(row + 1) % rowct][col] +
-          arr[(row + 1) % rowct][(col + 1) % colct]
 }
 
 function handleClick (e) {
-  arr[e.offsetX % boxSize][e.offsetY % boxSize] = !arr[e.offsetX % boxSize][e.offsetY % boxSize]
-
-  if (arr[e.offsetX % boxSize][e.offsetY % boxSize]) {
-    context.fillStyle = '#fff'
-    context.fillRect(Math.floor(e.offsetX / boxSize) * boxSize,
-                    Math.floor(e.offsetY / boxSize) * boxSize - 1,
-                    boxSize, boxSize)
-  } else {
-    context.clearRect(Math.floor(e.offsetX / boxSize) * boxSize,
-                    Math.floor(e.offsetY / boxSize) * boxSize - 1,
-                    boxSize, boxSize)
-  }
+  board.toggleBool(Math.floor(e.offsetX / boxSize), Math.floor(e.offsetY / boxSize))
+  draw()
 }
 
-setInterval(function () {
-  if (paused) {
-    canvas.addEventListener('click', handleClick)
-  } else {
-    update()
-    draw()
-  }
-}, 1000 / FPS)
+
+board.init()
+canvas.addEventListener('click', handleClick)
