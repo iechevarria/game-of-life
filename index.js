@@ -1,11 +1,13 @@
 var CANVAS_WIDTH = 800
 var CANVAS_HEIGHT = 600
+var FPS = 1
 
 var canvas = document.getElementById('canvas')
 var context = canvas.getContext('2d')
 var boxSize = 20
 var rowct = Math.floor(CANVAS_HEIGHT / boxSize)
 var colct = Math.floor(CANVAS_WIDTH / boxSize)
+var paused = true
 
 var arr = new Array(rowct)
 for (var i = 0; i < rowct; i++) {
@@ -15,9 +17,13 @@ for (var i = 0; i < rowct; i++) {
   }
 }
 
-canvas.addEventListener('click', handleClick)
-canvas.addEventListener('space', play)
+document.addEventListener('keydown', function (event) {
+  toggle()
+}, false)
 
+function toggle () {
+  paused = !paused
+}
 
 function draw () {
   for (var row = 0; row < rowct; row++) {
@@ -33,10 +39,10 @@ function draw () {
 function update () {
   var tmp = arr.slice(0)
 
-  for (var row = 0; row < rowct; row++) {
-    for (var column = 0; column < colct; column++) {
+  for (var i = 0; i < rowct; i++) {
+    for (var j = 0; j < colct; j++) {
+      console.log(arr.length)
       var aliveCount = sumNeighbors(arr, i, j)
-
       // alive
       if (arr[i][j]) {
         if (aliveCount === 2 || aliveCount === 3) {
@@ -58,14 +64,18 @@ function update () {
 }
 
 function sumNeighbors (arr, row, col) {
-  return (arr[(row - 1) % rowct][(col - 1) % colct] +
-          arr[(row - 1) % rowct][col % colct] +
-          arr[(row - 1) % rowct][(col + 1) % colct] +
-          arr[row % rowct][(col - 1) % colct] +
-          arr[row % rowct][(col + 1) % colct] +
-          arr[(row + 1) % rowct][(col - 1) % colct] +
-          arr[(row + 1) % rowct][col % colct] +
-          arr[(row + 1) % rowct][(col + 1) % colct])
+  console.log(rowct)
+  console.log(colct)
+  console.log(row)
+  console.log(col)
+  return arr[(row - 1 + rowct) % rowct][(col - 1 + colct) % colct] +
+          arr[(row - 1 + rowct) % rowct][col] +
+          arr[(row - 1 + rowct) % rowct][(col + 1) % colct] +
+          arr[row][(col - 1 + colct) % colct] +
+          arr[row][(col + 1) % colct] +
+          arr[(row + 1) % rowct][(col - 1 + colct) % colct] +
+          arr[(row + 1) % rowct][col] +
+          arr[(row + 1) % rowct][(col + 1) % colct]
 }
 
 function handleClick (e) {
@@ -83,7 +93,11 @@ function handleClick (e) {
   }
 }
 
-function play () {
-  context.fillStyle = '#f00'
-  context.fillRect(0, 0, boxSize, boxSize)
-}
+setInterval(function () {
+  if (paused) {
+    canvas.addEventListener('click', handleClick)
+  } else {
+    update()
+    draw()
+  }
+}, 1000 / FPS)
