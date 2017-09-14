@@ -1,9 +1,11 @@
 var CANVAS_WIDTH = 800
-var CANVAS_HEIGHT = 600
+var CANVAS_HEIGHT = 800
+var FPS = 5
+var paused = true
 
 var canvas = document.getElementById('canvas')
 var context = canvas.getContext('2d')
-var boxSize = 20
+var boxSize = 10
 var rowct = Math.floor(CANVAS_HEIGHT / boxSize)
 var colct = Math.floor(CANVAS_WIDTH / boxSize)
 
@@ -64,17 +66,12 @@ var board = {
   }
 }
 
-document.addEventListener('keydown', function (event) {
-  board.update()
-  draw()
-}, false)
-
 function draw () {
   context.beginPath()
   context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
-  for (var row = 0; row < rowct; row++) {
-    for (var col = 0; col < colct; col++) {
+  for (var row = 0; row < colct; row++) {
+    for (var col = 0; col < rowct; col++) {
       if (board.getBool(row, col)) {
         context.fillStyle = '#fff'
         context.fillRect(row * boxSize, col * boxSize, boxSize, boxSize)
@@ -83,11 +80,22 @@ function draw () {
   }
 }
 
+document.addEventListener('keydown', function (event) {
+  paused = !paused
+}, false)
+
+
 function handleClick (e) {
   board.toggleBool(Math.floor(e.offsetX / boxSize), Math.floor(e.offsetY / boxSize))
   draw()
 }
 
+setInterval(function () {
+  if (!paused) {
+    board.update()
+    draw()
+  }
+}, 1000 / FPS)
 
 board.init()
 canvas.addEventListener('click', handleClick)
