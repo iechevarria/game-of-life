@@ -1,6 +1,6 @@
 var CANVAS_WIDTH = 800
 var CANVAS_HEIGHT = 800
-var FPS = 5
+var FPS = 10
 var paused = true
 
 var canvas = document.getElementById('canvas')
@@ -8,6 +8,7 @@ var context = canvas.getContext('2d')
 var boxSize = 10
 var rowct = Math.floor(CANVAS_HEIGHT / boxSize)
 var colct = Math.floor(CANVAS_WIDTH / boxSize)
+var mouseLoc = [-1, -1]
 
 var board = {
   arrBools: new Array(rowct),
@@ -76,7 +77,33 @@ function draw () {
         context.fillStyle = '#fff'
         context.fillRect(row * boxSize, col * boxSize, boxSize, boxSize)
       }
+      if (row === mouseLoc[0] && col === mouseLoc[1]) {
+        if (board.getBool(row, col)) {
+          context.strokeStyle = '#000'
+        } else {
+          context.strokeStyle = '#fff'
+        }
+        context.lineWidth = 2
+        context.strokeRect(row * boxSize + 1, col * boxSize + 1, boxSize - 2, boxSize - 2)
+      }
     }
+  }
+}
+
+function mouseoverRedraw (row, col) {
+  context.clearRect(row * boxSize, col * boxSize, boxSize, boxSize)
+  if (board.getBool(row, col)) {
+    context.fillStyle = '#fff'
+    context.fillRect(row * boxSize, col * boxSize, boxSize, boxSize)
+  }
+  if (row === mouseLoc[0] && col === mouseLoc[1]) {
+    if (board.getBool(row, col)) {
+      context.strokeStyle = '#000'
+    } else {
+      context.strokeStyle = '#fff'
+    }
+    context.lineWidth = 2
+    context.strokeRect(row * boxSize + 1, col * boxSize + 1, boxSize - 2, boxSize - 2)
   }
 }
 
@@ -90,6 +117,15 @@ function handleClick (e) {
   draw()
 }
 
+function setCursor (e) {
+  var tmpX = mouseLoc[0]
+  var tmpY = mouseLoc[1]
+  mouseLoc[0] = Math.floor(e.offsetX / boxSize)
+  mouseLoc[1] = Math.floor(e.offsetY / boxSize)
+  mouseoverRedraw(tmpX, tmpY)
+  mouseoverRedraw(mouseLoc[0], mouseLoc[1])
+}
+
 setInterval(function () {
   if (!paused) {
     board.update()
@@ -99,3 +135,4 @@ setInterval(function () {
 
 board.init()
 canvas.addEventListener('click', handleClick)
+canvas.addEventListener('mousemove', setCursor)
