@@ -85,9 +85,10 @@ var tooltip = {
       context.font = '14px Courier'
       context.fillText('click: change cell', 25, 30)
       context.fillText('space: toggle play/pause', 25, 50)
-      context.fillText('    r: reset board', 25, 70)
-      context.fillText('    d: toggle play/pause display', 25, 90)
-      context.fillText('    h: toggle help', 25, 110)
+      context.fillText('    u: update by one step', 25, 70)
+      context.fillText('    r: reset board', 25, 90)
+      context.fillText('    d: toggle play/pause display', 25, 110)
+      context.fillText('    h: toggle help', 25, 130)
     }
     if (this.playText) {
       if (paused) {
@@ -171,17 +172,17 @@ window.onkeyup = function (e) {
   if (key === 80 || key === 32) {
     paused = !paused
     draw()
-  }
-  if (key === 72) {
+  } else if (key === 72) {
     tooltip.toggleHelp()
     draw()
-  }
-  if (key === 68) {
+  } else if (key === 68) {
     tooltip.togglePlayText()
     draw()
-  }
-  if (key === 82) {
+  } else if (key === 82) {
     board.init()
+    draw()
+  } else if (key === 85) {
+    board.update()
     draw()
   }
 }
