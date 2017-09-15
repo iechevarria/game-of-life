@@ -67,6 +67,25 @@ var board = {
   }
 }
 
+var tooltip = {
+  show: true,
+
+  toggle: function () {
+    this.show = !this.show
+  },
+
+  draw: function () {
+    if (this.show) {
+      context.fillStyle = '#fff'
+      context.font = '14px Courier'
+      context.fillText('click: change cell', 25, 30)
+      context.fillText('space: toggle play/pause', 25, 50)
+      context.fillText('    h: toggle help', 25, 70)
+      context.fillText('    r: reset board', 25, 90)
+    }
+  }
+}
+
 function draw () {
   context.beginPath()
   context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
@@ -88,6 +107,7 @@ function draw () {
       }
     }
   }
+  tooltip.draw()
 }
 
 function mouseoverRedraw (row, col) {
@@ -105,12 +125,8 @@ function mouseoverRedraw (row, col) {
     context.lineWidth = 2
     context.strokeRect(row * boxSize + 1, col * boxSize + 1, boxSize - 2, boxSize - 2)
   }
+  draw()
 }
-
-document.addEventListener('keydown', function (event) {
-  paused = !paused
-}, false)
-
 
 function handleClick (e) {
   board.toggleBool(Math.floor(e.offsetX / boxSize), Math.floor(e.offsetY / boxSize))
@@ -133,6 +149,22 @@ setInterval(function () {
   }
 }, 1000 / FPS)
 
+window.onkeyup = function (e) {
+  var key = e.keyCode ? e.keyCode : e.which
+  if (key === 80 || key === 32) {
+    paused = !paused
+  }
+  if (key === 72) {
+    tooltip.toggle()
+    draw()
+  }
+  if (key === 82) {
+    board.init()
+    draw()
+  }
+}
+
 board.init()
 canvas.addEventListener('click', handleClick)
 canvas.addEventListener('mousemove', setCursor)
+tooltip.draw()
