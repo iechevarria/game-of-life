@@ -3,6 +3,9 @@ var CANVAS_HEIGHT = 800
 var FPS = 10
 var paused = true
 
+var mouseClicked = false
+var drawMode = 'drawing'
+
 var canvas = document.getElementById('canvas')
 var context = canvas.getContext('2d')
 var boxSize = 10
@@ -14,7 +17,7 @@ var board = {
   arrBools: new Array(rowct),
   arrCounts: new Array(rowct),
 
-  init: function () {
+  reset: function () {
     for (var i = 0; i < rowct; i++) {
       this.arrBools[i] = new Array(colct)
       this.arrCounts[i] = new Array(colct)
@@ -25,8 +28,12 @@ var board = {
     }
   },
 
-  toggleBool: function (i, j) {
-    this.arrBools[i][j] = !this.arrBools[i][j]
+  setAlive: function (i, j) {
+    this.arrBools[i][j] = true
+  },
+
+  setDead: function (i, j) {
+    this.arrBools[i][j] = false
   },
 
   getBool: function (i, j) {
@@ -83,22 +90,26 @@ var tooltip = {
     if (this.show) {
       context.fillStyle = '#fff'
       context.font = '14px Courier'
-      context.fillText('click: change cell', 25, 30)
+      context.fillText('click: set cell (hold to draw)', 25, 30)
       context.fillText('space: toggle play/pause', 25, 50)
-      context.fillText('    u: update by one step', 25, 70)
-      context.fillText('    r: reset board', 25, 90)
-      context.fillText('    d: toggle play/pause display', 25, 110)
-      context.fillText('    h: toggle help', 25, 130)
+      context.fillText('    d: set cursor to draw mode', 25, 70)
+      context.fillText('    e: set cursor to erase mode', 25, 90)
+      context.fillText('    u: update by one step', 25, 110)
+      context.fillText('    r: reset board', 25, 130)
+      context.fillText('    s: toggle play/pause display', 25, 150)
+      context.fillText('    h: toggle help', 25, 170)
     }
     if (this.playText) {
       if (paused) {
         context.fillStyle = '#fff'
         context.font = '14px Courier'
-        context.fillText('paused', 360, 30)
+        context.fillText('paused', 364, 30)
+        context.fillText(drawMode, 360, 50)
       } else {
         context.fillStyle = '#fff'
         context.font = '14px Courier'
         context.fillText('playing', 360, 30)
+        context.fillText(drawMode, 360, 50)
       }
     }
   }
@@ -146,12 +157,15 @@ function mouseoverRedraw (row, col) {
   draw()
 }
 
-function handleClick (e) {
-  board.toggleBool(Math.floor(e.offsetX / boxSize), Math.floor(e.offsetY / boxSize))
-  draw()
-}
-
 function setCursor (e) {
+  if (mouseClicked) {
+    if (drawMode === 'drawing') {
+      board.setAlive(Math.floor(e.offsetX / boxSize), Math.floor(e.offsetY / boxSize))
+    } else {
+      board.setDead(Math.floor(e.offsetX / boxSize), Math.floor(e.offsetY / boxSize))
+    }
+    draw()
+  }
   var tmpX = mouseLoc[0]
   var tmpY = mouseLoc[1]
   mouseLoc[0] = Math.floor(e.offsetX / boxSize)
@@ -167,27 +181,60 @@ setInterval(function () {
   }
 }, 1000 / FPS)
 
-window.onkeyup = function (e) {
+function handleMouseDown (e) {
+  mouseClicked = true
+  if (drawMode === 'drawing') {
+    board.setAlive(Math.floor(e.offsetX / boxSize), Math.floor(e.offsetY / boxSize))
+  } else {
+    board.setDead(Math.floor(e.offsetX / boxSize), Math.floor(e.offsetY / boxSize))
+  }
+  draw()
+}
+
+window.onkeydown = function (e) {
   var key = e.keyCode ? e.keyCode : e.which
-  if (key === 80 || key === 32) {
-    paused = !paused
+  // d: draw
+  if (key === 68) {
+    drawMode = 'drawing'
     draw()
-  } else if (key === 72) {
-    tooltip.toggleHelp()
+  // e: erase
+  } else if (key === 69) {
+    drawMode = 'erasing'
     draw()
-  } else if (key === 68) {
-    tooltip.togglePlayText()
-    draw()
+  // r: reset
   } else if (key === 82) {
-    board.init()
+    board.reset()
     draw()
+  // u: updates
   } else if (key === 85) {
     board.update()
     draw()
   }
 }
 
-board.init()
-canvas.addEventListener('click', handleClick)
+window.onkeyup = function (e) {
+  var key = e.keyCode ? e.keyCode : e.which
+  // space: toggle play/pause
+  if (key === 32) {
+    paused = !paused
+    draw()
+  // h: toggle help
+  } else if (key === 72) {
+    tooltip.toggleHelp()
+    draw()
+  // s: toggle play/pause and brush display
+  } else if (key === 83) {
+    tooltip.togglePlayText()
+    draw()
+  }
+}
+
+function handleMouseUp () {
+  mouseClicked = false
+}
+
+board.reset()
 canvas.addEventListener('mousemove', setCursor)
+canvas.addEventListener('mousedown', handleMouseDown)
+canvas.addEventListener('mouseup', handleMouseUp)
 tooltip.draw()
