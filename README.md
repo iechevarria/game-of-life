@@ -4,11 +4,14 @@ Check it out at <a href='http://echevarria.io/projects/game-of-life/'>echevarria
 
 ## Controls
 <ul>
-  <li>Mouse <code>click</code> on a cell to change its value</li>
+  <li>Mouse <code>click</code> on a cell to set its value, hold to draw lines</li>
   <li>Press <code>space</code> to toggle play/pause</li>
-  <li>Press <code>u</code> to update the board state by one step</li>
-  <li>Press <code>r</code> to reset the board</li>
-  <li>Press <code>d</code> to toggle the play/pause display</li>
+  <li>Press <code>d</code> to set the cursor to draw mode</li>
+  <li>Press <code>e</code> to set the cursor to erase mode</li>
+  <li>Press <code>u</code> to update by one step</li>
+  <li>Press <code>p</code> to reset the board</li>
+  <li>Press <code>s</code> to toggle the play/pause display</li>
+  <li>Press <code>h</code> to toggle the play/pause display</li>
 </ul>
 
 ## Citations
