@@ -41,6 +41,7 @@ var board = {
   },
 
   update: function () {
+    // get number of living neighbors for each cell
     for (var row = 0; row < rowct; row++) {
       for (var col = 0; col < colct; col++) {
         this.arrCounts[row][col] = this.arrBools[(row - 1 + rowct) % rowct][(col - 1 + colct) % colct] +
@@ -53,6 +54,7 @@ var board = {
                             this.arrBools[(row + 1) % rowct][(col + 1) % colct]
       }
     }
+    // change cell values
     for (var i = 0; i < rowct; i++) {
       for (var j = 0; j < colct; j++) {
         var aliveCount = this.arrCounts[i][j]
@@ -95,7 +97,7 @@ var tooltip = {
       context.fillText('    d: set cursor to draw mode', 25, 70)
       context.fillText('    e: set cursor to erase mode', 25, 90)
       context.fillText('    u: update by one step', 25, 110)
-      context.fillText('    r: reset board', 25, 130)
+      context.fillText('    p: reset board', 25, 130)
       context.fillText('    s: toggle play/pause display', 25, 150)
       context.fillText('    h: toggle help', 25, 170)
     }
@@ -121,40 +123,32 @@ function draw () {
 
   for (var row = 0; row < colct; row++) {
     for (var col = 0; col < rowct; col++) {
+      // draw cells
       if (board.getBool(row, col)) {
         context.fillStyle = '#fff'
         context.fillRect(row * boxSize, col * boxSize, boxSize, boxSize)
       }
+      // draw cursor
       if (row === mouseLoc[0] && col === mouseLoc[1]) {
         if (board.getBool(row, col)) {
           context.strokeStyle = '#000'
         } else {
           context.strokeStyle = '#fff'
         }
-        context.lineWidth = 2
-        context.strokeRect(row * boxSize + 1, col * boxSize + 1, boxSize - 2, boxSize - 2)
+        if (drawMode === 'drawing') {
+          context.lineWidth = 2
+          context.strokeRect(row * boxSize + 1, col * boxSize + 1, boxSize - 2, boxSize - 2)
+        } else {
+          context.moveTo(row * boxSize, col * boxSize)
+          context.lineTo((row + 1) * boxSize, (col + 1) * boxSize)
+          context.moveTo(row * boxSize, (col + 1) * boxSize)
+          context.lineTo((row + 1) * boxSize, col * boxSize)
+          context.stroke()
+        }
       }
     }
   }
   tooltip.draw()
-}
-
-function mouseoverRedraw (row, col) {
-  context.clearRect(row * boxSize, col * boxSize, boxSize, boxSize)
-  if (board.getBool(row, col)) {
-    context.fillStyle = '#fff'
-    context.fillRect(row * boxSize, col * boxSize, boxSize, boxSize)
-  }
-  if (row === mouseLoc[0] && col === mouseLoc[1]) {
-    if (board.getBool(row, col)) {
-      context.strokeStyle = '#000'
-    } else {
-      context.strokeStyle = '#fff'
-    }
-    context.lineWidth = 2
-    context.strokeRect(row * boxSize + 1, col * boxSize + 1, boxSize - 2, boxSize - 2)
-  }
-  draw()
 }
 
 function setCursor (e) {
@@ -164,22 +158,11 @@ function setCursor (e) {
     } else {
       board.setDead(Math.floor(e.offsetX / boxSize), Math.floor(e.offsetY / boxSize))
     }
-    draw()
   }
-  var tmpX = mouseLoc[0]
-  var tmpY = mouseLoc[1]
   mouseLoc[0] = Math.floor(e.offsetX / boxSize)
   mouseLoc[1] = Math.floor(e.offsetY / boxSize)
-  mouseoverRedraw(tmpX, tmpY)
-  mouseoverRedraw(mouseLoc[0], mouseLoc[1])
+  draw()
 }
-
-setInterval(function () {
-  if (!paused) {
-    board.update()
-    draw()
-  }
-}, 1000 / FPS)
 
 function handleMouseDown (e) {
   mouseClicked = true
@@ -189,6 +172,10 @@ function handleMouseDown (e) {
     board.setDead(Math.floor(e.offsetX / boxSize), Math.floor(e.offsetY / boxSize))
   }
   draw()
+}
+
+function handleMouseUp () {
+  mouseClicked = false
 }
 
 window.onkeydown = function (e) {
@@ -201,8 +188,8 @@ window.onkeydown = function (e) {
   } else if (key === 69) {
     drawMode = 'erasing'
     draw()
-  // r: reset
-  } else if (key === 82) {
+  // p: reset
+  } else if (key === 80) {
     board.reset()
     draw()
   // u: updates
@@ -229,9 +216,13 @@ window.onkeyup = function (e) {
   }
 }
 
-function handleMouseUp () {
-  mouseClicked = false
-}
+// main loop
+setInterval(function () {
+  if (!paused) {
+    board.update()
+    draw()
+  }
+}, 1000 / FPS)
 
 board.reset()
 canvas.addEventListener('mousemove', setCursor)
