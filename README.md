@@ -1,6 +1,7 @@
 # game-of-life
-Interactive JavaScript implementation of <a href='https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life'>Conway's Game of Life</a>.
-Check it out at <a href='http://echevarria.io/code/game-of-life/'>echevarria.io</a>.
+Interactive JavaScript implementation of <a href='https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life'>Conway's Game of Life</a>. Check it out at <a href='http://echevarria.io/code/game-of-life/'>echevarria.io</a>.
+
+![](screenshot.png)
 
 ## Controls
 <ul>
